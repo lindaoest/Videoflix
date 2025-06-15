@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from auth_app.api.backends import EmailBackend
 import os
 from dotenv import load_dotenv
 
@@ -45,6 +46,8 @@ INSTALLED_APPS = [
 	'rest_framework',
 	'django_rq',
 	'rest_framework.authtoken',
+	'auth_app',
+	'videoflix_app'
 	# 'videoflix_app.apps.ContentConfig'
 ]
 
@@ -170,3 +173,5 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ]
 }
+
+AUTHENTICATION_BACKENDS = ['auth_app.api.backends.EmailBackend']
