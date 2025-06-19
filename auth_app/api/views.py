@@ -5,13 +5,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import User
+from auth_app.api.serializers import RegistrationSerializer
 
 """ View for user registration - anyone can access """
 class RegistrationView(APIView):
 	permission_classes = [AllowAny]
 
 	def post(self, request, *args, **kwargs):
-		serializer = User(data=request.data)
+		serializer = RegistrationSerializer(data=request.data)
 
 		# Check if input data is valid
 		if serializer.is_valid():

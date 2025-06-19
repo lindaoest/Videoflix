@@ -20,18 +20,22 @@ class RegistrationSerializer(serializers.ModelSerializer):
         repeated_pw = data['repeated_password']
 
         if pw != repeated_pw:
-            raise serializers.ValidationError({'error': 'Passwörter stimmen nicht überein'})
+            raise serializers.ValidationError({'message': 'Passwörter stimmen nicht überein'})
+
+        if User.objects.filter(email=data['email']):
+            raise serializers.ValidationError({'message': 'Diese Email existiert bereits'})
+
         return data
 
     # Validate that the email does not already exist in the database
-    def validate_email(self, value):
-        if User.objects.filter(email=value):
-            raise serializers.ValidationError({'error': 'Diese Email existiert bereits'})
-        return value
+    # def validate_email(self, value):
+    #     if User.objects.filter(email=value):
+    #         raise serializers.ValidationError({'message': 'Diese Email existiert bereits'})
+    #     return value
 
     # Create a new user and associated profile based on profile type
     def create(self, validated_data):
-        user = User(email=validated_data['email'])
+        user = User(username=validated_data['email'], email=validated_data['email'])
         # Hash the password before saving
         user.set_password(validated_data['password'])
         user.save()

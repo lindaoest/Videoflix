@@ -184,4 +184,4 @@ REST_FRAMEWORK = {
     ]
 }
 
-AUTHENTICATION_BACKENDS = ['auth_app.api.backends.EmailBackend']
+# AUTHENTICATION_BACKENDS = ['auth_app.api.backends.EmailBackend']
