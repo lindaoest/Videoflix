@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import User
-from auth_app.api.serializers import RegistrationSerializer
+from auth_app.api.serializers import RegistrationSerializer, LoginSerializer
 
 """ View for user registration - anyone can access """
 class RegistrationView(APIView):
@@ -33,12 +33,15 @@ class RegistrationView(APIView):
 """ View for user login - inherits default ObtainAuthToken behavior """
 class LoginView(ObtainAuthToken):
 	permission_classes = [AllowAny]
+	serializer_class = LoginSerializer
+	# renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
 
 	def post(self, request, *args, **kwargs):
-		serializer = self.serializer_class(data=request.data)
+		serializer = self.serializer_class(data=request.data, context={'request': request})
 
 		# Validate credentials
 		if serializer.is_valid():
+			print('test', serializer.validated_data)
 			user = serializer.validated_data['user']
 			# Get or create authentication token for user
 			token, created = Token.objects.get_or_create(user=user)

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
 """ Serializer for user registration """
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -41,3 +42,31 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+class LoginSerializer(serializers.ModelSerializer):
+    # Email is required
+    email = serializers.EmailField(required=True)
+    # Password is write-only to avoid exposure in responses
+    password = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'password']
+
+    # Validate that password and repeated password match
+    def validate(self, data):
+        email = data['email']
+        password = data['password']
+
+        user = authenticate(
+            request=self.context.get('request'),
+            username=email,
+            password=password
+        )
+
+        if not user:
+            msg = ('Die eingegebenen Daten sind nicht korrekt')
+            raise serializers.ValidationError(msg, code='authentication')
+
+        data['user'] = user
+        return data
