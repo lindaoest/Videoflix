@@ -66,7 +66,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
         if not user:
             msg = ('Die eingegebenen Daten sind nicht korrekt')
-            raise serializers.ValidationError(msg, code='authentication')
+            raise serializers.ValidationError({'message': msg}, code='authentication')
 
         data['user'] = user
         return data
