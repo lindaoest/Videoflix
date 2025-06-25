@@ -14,6 +14,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'password', 'repeated_password']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
     # Validate that password and repeated password match
     def validate(self, data):
@@ -43,30 +46,30 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         return user
 
-class LoginSerializer(serializers.ModelSerializer):
-    # Email is required
-    email = serializers.EmailField(required=True)
-    # Password is write-only to avoid exposure in responses
-    password = serializers.CharField(write_only=True, required=True)
+# class LoginSerializer(serializers.ModelSerializer):
+#     # Email is required
+#     email = serializers.EmailField(required=True)
+#     # Password is write-only to avoid exposure in responses
+#     password = serializers.CharField(write_only=True, required=True)
 
-    class Meta:
-        model = User
-        fields = ['email', 'password']
+#     class Meta:
+#         model = User
+#         fields = ['email', 'password']
 
-    # Validate that password and repeated password match
-    def validate(self, data):
-        email = data['email']
-        password = data['password']
+#     # Validate that password and repeated password match
+#     def validate(self, data):
+#         email = data['email']
+#         password = data['password']
 
-        user = authenticate(
-            request=self.context.get('request'),
-            username=email,
-            password=password
-        )
+#         user = authenticate(
+#             request=self.context.get('request'),
+#             username=email,
+#             password=password
+#         )
 
-        if not user:
-            msg = ('Die eingegebenen Daten sind nicht korrekt')
-            raise serializers.ValidationError({'message': msg}, code='authentication')
+#         if not user:
+#             msg = ('Die eingegebenen Daten sind nicht korrekt')
+#             raise serializers.ValidationError({'message': msg}, code='authentication')
 
-        data['user'] = user
-        return data
+#         data['user'] = user
+#         return data

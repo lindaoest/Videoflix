@@ -56,7 +56,8 @@ INSTALLED_APPS = [
 	'django_rq',
 	'rest_framework.authtoken',
 	'auth_app',
-	'videoflix_app'
+	'videoflix_app',
+	'rest_framework_simplejwt',
 	# 'videoflix_app.apps.ContentConfig'
 ]
 
@@ -177,7 +178,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
 	],
 	'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
