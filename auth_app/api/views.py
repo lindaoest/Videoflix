@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import User
 from auth_app.api.serializers import RegistrationSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 """ View for user registration - anyone can access """
 class RegistrationView(APIView):
@@ -56,3 +57,30 @@ class RegistrationView(APIView):
 
 # 		# Return errors if authentication fails
 # 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CookieTokenObtainPairView(TokenObtainPairView):
+
+	def post(self, request, *args, **kwargs):
+		response =  super().post(request, *args, **kwargs)
+
+		access = response.data.get('access')
+		refresh = response.data.get('refresh')
+
+		response.set_cookie(
+			key='access_token',
+			value=access,
+			httponly=True,
+			secure=True,
+			samesite='Lax'
+		)
+
+		response.set_cookie(
+			key='refresh_token',
+			value=refresh,
+			httponly=True,
+			secure=True,
+			samesite='Lax'
+		)
+
+		response.data = {'message': 'success'}
+		return response
