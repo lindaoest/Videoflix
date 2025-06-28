@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import get_user_model
 
 """ Serializer for user registration """
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -73,3 +75,34 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 #         data['user'] = user
 #         return data
+
+User = get_user_model()
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    # Email is required
+    email = serializers.EmailField(required=True)
+    # Password is write-only to avoid exposure in responses
+    password = serializers.CharField(write_only=True, required=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if 'username' in self.fields:
+            self.fields.pop('username')
+
+    # Validate that password and repeated password match
+    def validate(self, data):
+        email = data['email']
+        password = data['password']
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError('Die eingegebenen Daten sind nicht korrekt')
+
+        if not user.check_password(password):
+            raise serializers.ValidationError('Die eingegebenen Daten sind nicht korrekt')
+
+        data['username'] = user.username
+        data = super().validate(data)
+        return data

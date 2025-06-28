@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import User
-from auth_app.api.serializers import RegistrationSerializer
+from auth_app.api.serializers import RegistrationSerializer, CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 """ View for user registration - anyone can access """
@@ -59,16 +59,24 @@ class RegistrationView(APIView):
 # 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CookieTokenObtainPairView(TokenObtainPairView):
+	serializer_class = CustomTokenObtainPairSerializer
 
 	def post(self, request, *args, **kwargs):
-		response =  super().post(request, *args, **kwargs)
+		# response =  super().post(request, *args, **kwargs)
+		serializer = self.get_serializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
 
-		access = response.data.get('access')
-		refresh = response.data.get('refresh')
+		access = serializer.validated_data['access']
+		refresh = serializer.validated_data['refresh']
+
+		# access = response.data.get('access')
+		# refresh = response.data.get('refresh')
+
+		response = Response({'message': 'success'})
 
 		response.set_cookie(
 			key='access_token',
-			value=access,
+			value=str(access),
 			httponly=True,
 			secure=True,
 			samesite='Lax'
@@ -76,11 +84,39 @@ class CookieTokenObtainPairView(TokenObtainPairView):
 
 		response.set_cookie(
 			key='refresh_token',
-			value=refresh,
+			value=str(refresh),
 			httponly=True,
 			secure=True,
 			samesite='Lax'
 		)
 
 		response.data = {'message': 'success'}
+		return response
+
+class RefreshTokenRefreshView(TokenRefreshView):
+
+	def post(self, request, *args, **kwargs):
+		refresh_token = request.COOKIES.get('refresh_token')
+
+		if refresh_token is None:
+			return Response({'detail': 'Refresh Token not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+		serializer = self.get_serializer(data={'refresh': refresh_token})
+
+		try:
+			serializer.is_valid(raise_exception=True)
+		except:
+			return Response({'detail': 'Refresh Token invalid'}, status=status.HTTP_400_BAD_REQUEST)
+
+		access_token = serializer.validated_data.get('access')
+
+		response = Response({'message': 'Access Token refreshed'})
+		response.set_cookie(
+			key='access_token',
+			value=access_token,
+			httponly=True,
+			secure=True,
+			samesite='Lax'
+		)
+
 		return response
