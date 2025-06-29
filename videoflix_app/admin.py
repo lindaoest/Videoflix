@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from videoflix_app.models import Genre, Video
+
+admin.site.register(Video)
+admin.site.register(Genre)
