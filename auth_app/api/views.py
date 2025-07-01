@@ -7,6 +7,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import User
 from auth_app.api.serializers import RegistrationSerializer, CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
 
 """ View for user registration - anyone can access """
 class RegistrationView(APIView):
@@ -120,3 +122,7 @@ class RefreshTokenRefreshView(TokenRefreshView):
 		)
 
 		return response
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})

@@ -95,6 +95,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 CORS_ALLOW_CREDENTIALS = True
 
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_HTTPONLY = False  # Muss False sein, damit Angular es lesen kann
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False  # Nur bei HTTPS!
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
