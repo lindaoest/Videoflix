@@ -123,6 +123,14 @@ class RefreshTokenRefreshView(TokenRefreshView):
 
 		return response
 
+class LogoutView(APIView):
+	def post(self, request, *args, **kwargs):
+		response = Response("Cookies Deleted")
+		response.delete_cookie("access_token")
+		response.delete_cookie("refresh_token")
+		return response
+
+
 @ensure_csrf_cookie
 def csrf(request):
     return JsonResponse({'detail': 'CSRF cookie set'})
