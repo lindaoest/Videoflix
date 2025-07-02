@@ -9,8 +9,10 @@ class Genre(models.Model):
 class Video(models.Model):
 	title = models.CharField()
 	created_at = models.DateTimeField(auto_now_add=True)
-	video_file = models.FileField(upload_to='videos', blank=True, null=True)
+	video_file = models.FileField(upload_to='videos/', blank=True, null=True)
 	genre = models.ForeignKey(Genre, on_delete=models.CASCADE, null=True, blank=True)
+	description = models.TextField(max_length=366, blank=True)
+	thumbnail = models.FileField(upload_to='thumbnails/', blank=True, null=True)
 
 	def __str__(self):
 		return self.title

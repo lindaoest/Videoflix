@@ -98,10 +98,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise serializers.ValidationError('Die eingegebenen Daten sind nicht korrekt')
+            raise serializers.ValidationError({'message': 'Die eingegebenen Daten sind nicht korrekt'})
 
         if not user.check_password(password):
-            raise serializers.ValidationError('Die eingegebenen Daten sind nicht korrekt')
+            raise serializers.ValidationError({'message': 'Die eingegebenen Daten sind nicht korrekt'})
 
         data['username'] = user.username
         data = super().validate(data)

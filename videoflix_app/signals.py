@@ -7,7 +7,7 @@ import os
 @receiver(post_save, sender=Video)
 def video_post_save(sender, instance, created, **kwargs):
 	if created:
-		convert720p(instance.video_file.path)
+		convert720p(instance, instance.video_file.path)
 
 @receiver(post_delete, sender=Video)
 def auto_delete_file_on_delete(sender, instance, **kwargs):
