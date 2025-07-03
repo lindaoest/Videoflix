@@ -23,6 +23,14 @@ class MediaView(APIView):
 
         return Response(grouped_data)
 
+class HeroVideoView(APIView):
+
+    def get(self, request, format=None):
+        newest_video = Video.objects.order_by('-created_at')[0]
+        serializer = VideoSerializer(newest_video, context={'request': request})
+
+        return Response(serializer.data)
+
 
 # class MediaView(generics.ListAPIView):
 #     queryset = Video.objects.all()
