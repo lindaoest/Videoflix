@@ -136,6 +136,14 @@ RQ_QUEUES = {
     },
 }
 
+EMAIL_HOST=os.environ.get("EMAIL_HOST")
+EMAIL_PORT=os.environ.get("EMAIL_PORT")
+EMAIL_HOST_USER=os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD=os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS=os.environ.get("EMAIL_USE_TLS")
+EMAIL_USE_SSL=os.environ.get("EMAIL_USE_SSL")
+DEFAULT_FROM_EMAIL=os.environ.get("DEFAULT_FROM_EMAIL")
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

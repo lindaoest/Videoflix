@@ -1,0 +1,6 @@
+<p>Dear {{ username }},
+Thank you for registering with <a href="{% url 'register' %}">Videoflix</a>. To complete your registration and verify your email address, please click the link below:</p>
+
+<button href="{{ activation_link }}">Activate account</button>
+
+<p>If you did not create an account with us, please disregard this email.<br>Best regards,<br><br>Your Videoflix Team. </p>

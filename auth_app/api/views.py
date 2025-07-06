@@ -9,6 +9,8 @@ from auth_app.api.serializers import RegistrationSerializer, CustomTokenObtainPa
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
 
 """ View for user registration - anyone can access """
 class RegistrationView(APIView):
@@ -21,6 +23,8 @@ class RegistrationView(APIView):
 		if serializer.is_valid():
 			# Save user and create a token
 			user = serializer.save()
+			user.is_active = False
+			user.save()
 			# token, created = Token.objects.get_or_create(user=user)
 
 			# Return token and user info in response
@@ -118,7 +122,10 @@ class RefreshTokenRefreshView(TokenRefreshView):
 
 		access_token = serializer.validated_data.get('access')
 
-		response = Response({'detail': 'Token refreshed'})
+		response = Response({
+			'detail': 'Token refreshed',
+			'access': access_token
+		})
 		response.set_cookie(
 			key='access_token',
 			value=access_token,
@@ -135,6 +142,22 @@ class LogoutView(APIView):
 		response.delete_cookie("access_token")
 		response.delete_cookie("refresh_token")
 		return response
+
+class ActivateRegistration(APIView):
+	def get(self, request, uidb64, token):
+
+		try:
+			uid = urlsafe_base64_decode(uidb64).decode()
+			user = User.objects.get(pk=uid)
+		except (User.DoesNotExist, ValueError, TypeError):
+			return Response({"message": "Invalid link"})
+
+		if default_token_generator.check_token(user, token):
+			user.is_active = True
+			user.save()
+			return Response({"message": "Account successfully activated."})
+		else:
+			return Response({"message": "Token invalid or expired."})
 
 
 @ensure_csrf_cookie
