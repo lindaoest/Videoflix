@@ -92,7 +92,13 @@ class CookieTokenObtainPairView(TokenObtainPairView):
 			samesite='Lax'
 		)
 
-		response.data = {'message': 'success'}
+		response.data = {
+			"detail": "Login successful",
+			"user": {
+				"id": serializer.validated_data["pk"],
+				"username": serializer.validated_data["username"]
+			}
+		}
 		return response
 
 class RefreshTokenRefreshView(TokenRefreshView):
@@ -112,7 +118,7 @@ class RefreshTokenRefreshView(TokenRefreshView):
 
 		access_token = serializer.validated_data.get('access')
 
-		response = Response({'message': 'Access Token refreshed'})
+		response = Response({'detail': 'Token refreshed'})
 		response.set_cookie(
 			key='access_token',
 			value=access_token,
@@ -125,7 +131,7 @@ class RefreshTokenRefreshView(TokenRefreshView):
 
 class LogoutView(APIView):
 	def post(self, request, *args, **kwargs):
-		response = Response("Cookies Deleted")
+		response = Response({"detail": "Log-Out successfully! All Tokens will be deleted. Refresh token is now invalid."})
 		response.delete_cookie("access_token")
 		response.delete_cookie("refresh_token")
 		return response

@@ -11,11 +11,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
     # Password is write-only to avoid exposure in responses
     password = serializers.CharField(write_only=True, required=True)
     # Repeat password to confirm correctness
-    repeated_password = serializers.CharField(write_only=True)
+    confirmed_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'repeated_password']
+        fields = ['email', 'password', 'confirmed_password']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -23,7 +23,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     # Validate that password and repeated password match
     def validate(self, data):
         pw = data['password']
-        repeated_pw = data['repeated_password']
+        repeated_pw = data['confirmed_password']
 
         if pw != repeated_pw:
             raise serializers.ValidationError({'message': 'Passwörter stimmen nicht überein'})
@@ -32,12 +32,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'message': 'Diese Email existiert bereits'})
 
         return data
-
-    # Validate that the email does not already exist in the database
-    # def validate_email(self, value):
-    #     if User.objects.filter(email=value):
-    #         raise serializers.ValidationError({'message': 'Diese Email existiert bereits'})
-    #     return value
 
     # Create a new user and associated profile based on profile type
     def create(self, validated_data):
@@ -103,6 +97,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if not user.check_password(password):
             raise serializers.ValidationError({'message': 'Die eingegebenen Daten sind nicht korrekt'})
 
-        data['username'] = user.username
-        data = super().validate(data)
-        return data
+        self.user = user
+
+        token_data = super().validate({
+            self.username_field: user.username,
+            'password': password
+        })
+
+        token_data['username'] = user.username
+        token_data['pk'] = user.id
+
+        return token_data
