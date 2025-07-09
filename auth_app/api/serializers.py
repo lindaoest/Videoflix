@@ -108,3 +108,27 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token_data['pk'] = user.id
 
         return token_data
+
+class ConfirmPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    # Validate that password and repeated password match
+    def validate(self, data):
+        pw = data['password']
+        repeated_pw = data['confirm_password']
+
+        if pw != repeated_pw:
+            raise serializers.ValidationError({'message': 'Passwörter stimmen nicht überein'})
+
+        return data
+
+    # Create a new user and associated profile based on profile type
+    def create(self, validated_data):
+        user = self.context['user']
+        # Hash the password before saving
+        user.set_password(validated_data['password'])
+        user.save()
+
+        return user
+

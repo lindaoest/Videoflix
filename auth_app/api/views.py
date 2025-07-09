@@ -5,12 +5,17 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import User
-from auth_app.api.serializers import RegistrationSerializer, CustomTokenObtainPairSerializer
+from auth_app.api.serializers import RegistrationSerializer, CustomTokenObtainPairSerializer, ConfirmPasswordSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
+from django.dispatch import Signal
+from django.contrib.auth.models import User
+from rest_framework import status
+
+resetPassword = Signal()
 
 """ View for user registration - anyone can access """
 class RegistrationView(APIView):
@@ -158,6 +163,46 @@ class ActivateRegistration(APIView):
 			return Response({"message": "Account successfully activated."})
 		else:
 			return Response({"message": "Token invalid or expired."})
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        user = User.objects.get(email=email)
+
+        if user is not None:
+            resetPassword.send(sender=None, instance=user, created=True)
+
+            return Response({
+                "detail": "An email has been sent to reset your password."
+            }, status=status.HTTP_200_OK)
+
+class ConfirmPasswordView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = [AllowAny]
+
+    def post(self, request, uidb64, token):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except (User.DoesNotExist, ValueError, TypeError):
+            return Response({"message": "Invalid link"})
+
+        if default_token_generator.check_token(user, token):
+            serializer = ConfirmPasswordSerializer(data=request.data, context={'user': user})
+
+            # Check if input data is valid
+            if serializer.is_valid():
+
+                return Response({
+                    'detail': "Your Password has been successfully reset."
+                }, status=status.HTTP_201_CREATED)
+
+            # Return validation errors if input is invalid
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "Token invalid or expired."})
 
 
 @ensure_csrf_cookie
