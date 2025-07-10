@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
 
@@ -21,15 +20,16 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
 
     # Validate that password and repeated password match
+    # Check if email already exists
     def validate(self, data):
         pw = data['password']
         repeated_pw = data['confirmed_password']
 
         if pw != repeated_pw:
-            raise serializers.ValidationError({'message': 'Passwörter stimmen nicht überein'})
+            raise serializers.ValidationError({'message': 'Passwords do not match'})
 
         if User.objects.filter(email=data['email']):
-            raise serializers.ValidationError({'message': 'Diese Email existiert bereits'})
+            raise serializers.ValidationError({'message': 'This email already exists'})
 
         return data
 
@@ -42,37 +42,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         return user
 
-# class LoginSerializer(serializers.ModelSerializer):
-#     # Email is required
-#     email = serializers.EmailField(required=True)
-#     # Password is write-only to avoid exposure in responses
-#     password = serializers.CharField(write_only=True, required=True)
-
-#     class Meta:
-#         model = User
-#         fields = ['email', 'password']
-
-#     # Validate that password and repeated password match
-#     def validate(self, data):
-#         email = data['email']
-#         password = data['password']
-
-#         user = authenticate(
-#             request=self.context.get('request'),
-#             username=email,
-#             password=password
-#         )
-
-#         if not user:
-#             msg = ('Die eingegebenen Daten sind nicht korrekt')
-#             raise serializers.ValidationError({'message': msg}, code='authentication')
-
-#         data['user'] = user
-#         return data
-
 User = get_user_model()
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+class LoginSerializer(TokenObtainPairSerializer):
     # Email is required
     email = serializers.EmailField(required=True)
     # Password is write-only to avoid exposure in responses
@@ -84,7 +56,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if 'username' in self.fields:
             self.fields.pop('username')
 
-    # Validate that password and repeated password match
     def validate(self, data):
         email = data['email']
         password = data['password']
@@ -92,10 +63,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise serializers.ValidationError({'message': 'Die eingegebenen Daten sind nicht korrekt'})
+            raise serializers.ValidationError({'message': 'The data entered is not correct'})
 
         if not user.check_password(password):
-            raise serializers.ValidationError({'message': 'Die eingegebenen Daten sind nicht korrekt'})
+            raise serializers.ValidationError({'message': 'The data entered is not correct'})
 
         self.user = user
 
@@ -119,7 +90,7 @@ class ConfirmPasswordSerializer(serializers.Serializer):
         repeated_pw = data['confirm_password']
 
         if pw != repeated_pw:
-            raise serializers.ValidationError({'message': 'Passwörter stimmen nicht überein'})
+            raise serializers.ValidationError({'message': 'Passwords do not match'})
 
         return data
 
