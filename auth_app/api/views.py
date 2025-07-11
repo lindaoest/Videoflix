@@ -180,7 +180,6 @@ class ResetPasswordView(APIView):
 
 class ConfirmPasswordView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = [AllowAny]
 
     def post(self, request, uidb64, token):
         try:
