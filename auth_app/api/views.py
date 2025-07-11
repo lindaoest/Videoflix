@@ -149,6 +149,8 @@ class LogoutView(APIView):
 
 
 class ActivateRegistration(APIView):
+	permission_classes = [AllowAny]
+
 	def get(self, request, uidb64, token):
 
 		try:

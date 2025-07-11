@@ -1,0 +1,6 @@
+Dear {{ username }},
+Thank you for registering with <a href="http://localhost:4200">Videoflix</a>. To complete your registration and verify your email address, please click the link below:
+
+<a href="{{ activation_link }}">Activate account</a>
+
+If you did not create an account with us, please disregard this email.<br>Best regards,<br><br>Your Videoflix Team.
