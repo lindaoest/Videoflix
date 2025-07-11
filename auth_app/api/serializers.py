@@ -86,7 +86,7 @@ class ConfirmPasswordSerializer(serializers.Serializer):
 
     # Validate that password and repeated password match
     def validate(self, data):
-        pw = data['password']
+        pw = data['new_password']
         repeated_pw = data['confirm_password']
 
         if pw != repeated_pw:
@@ -98,7 +98,7 @@ class ConfirmPasswordSerializer(serializers.Serializer):
     def create(self, validated_data):
         user = self.context['user']
         # Hash the password before saving
-        user.set_password(validated_data['password'])
+        user.set_password(validated_data['new_password'])
         user.save()
 
         return user

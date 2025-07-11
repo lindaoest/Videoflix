@@ -35,7 +35,7 @@ def send_email_reset_password(sender, instance, created, **kwargs):
     token = default_token_generator.make_token(instance)
     uid = urlsafe_base64_encode(force_bytes(instance.pk))
     activation_path = reverse('password-confirm-list', kwargs={'uidb64': uid, 'token': token})
-    activation_link = f"http://localhost:8000{activation_path}"
+    activation_link = f"http://localhost:4200/confirm-password/{uid}/{token}"
     confirmation_msg_text = render_to_string('password_confirm-email.txt', {'activation_link': activation_link})
     confirmation_msg_html = render_to_string('password_confirm-email.html', {'activation_link': activation_link})
 

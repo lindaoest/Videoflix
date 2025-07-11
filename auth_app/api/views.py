@@ -193,6 +193,7 @@ class ConfirmPasswordView(APIView):
 
             # Check if input data is valid
             if serializer.is_valid():
+                serializer.save()
 
                 return Response({
                     'detail': 'Your Password has been successfully reset.'
