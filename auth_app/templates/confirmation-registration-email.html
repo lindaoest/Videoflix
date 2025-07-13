@@ -1,8 +1,26 @@
-<p>Dear {{ username }},
-Thank you for registering with <a href="http://localhost:4200">Videoflix</a>. To complete your registration and verify your email address, please click the link below:</p>
+<!DOCTYPE html>
+<html>
+	<body>
 
-<button>
-	<a href="{{ activation_link }}">Activate account</a>
-</button>
+		<img style="width: 250px; height: 40px;" src="http://localhost:8000/media/logo.svg" alt="Logo">
 
-<p>If you did not create an account with us, please disregard this email.<br>Best regards,<br><br>Your Videoflix Team. </p>
+		<p>Dear <span style="color: #2E3EDF">{{ username }}</span>,
+			<br>
+			Thank you for registering with <a href="http://localhost:4200" style="text-decoration: none; color: ##2E3EDF;">Videoflix</a>. To complete your registration and verify your email address, please click the link below:
+		</p>
+
+		<button
+			style="border-radius: 40px;
+			border: none;
+			background-color: #2E3EDF;
+			padding: 12px 24px">
+			<a href="{{ activation_link }}" style="text-decoration: none; color: #FFFFFF; font-weight: bold;">Activate account</a>
+		</button>
+
+		<p>If you did not create an account with us, please disregard this email.
+			<br><br>Best regards,
+			<br><br>Your Videoflix Team.
+		</p>
+
+	</body>
+</html>
