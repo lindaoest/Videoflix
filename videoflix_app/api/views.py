@@ -4,24 +4,36 @@ from rest_framework.response import Response
 from videoflix_app.models import Video, Genre
 from videoflix_app.api.serializers import VideoSerializer
 from rest_framework import status
+from django.http import Http404
+from django.conf import settings
+import os
+from rest_framework.permissions import AllowAny
+
+# class MediaView(APIView):
+
+#     def get(self, request, format=None):
+#         categories = Genre.objects.all()
+
+#         grouped_data = []
+
+#         for category in categories:
+#             videos = Video.objects.filter(category=category)
+#             serialized_videos = VideoSerializer(videos, many=True, context={'request': request}).data
+
+#             grouped_data.append({
+#                 'category': category.name,
+#                 'videos': serialized_videos
+#             })
+
+#         return Response(grouped_data, status=status.HTTP_200_OK)
 
 class MediaView(APIView):
 
     def get(self, request, format=None):
-        categories = Genre.objects.all()
+        videos = Video.objects.all()
+        serializer = VideoSerializer(videos, context={'request': request})
 
-        grouped_data = []
-
-        for category in categories:
-            videos = Video.objects.filter(category=category)
-            serialized_videos = VideoSerializer(videos, many=True, context={'request': request}).data
-
-            grouped_data.append({
-                'category': category.name,
-                'videos': serialized_videos
-            })
-
-        return Response(grouped_data, status=status.HTTP_200_OK)
+        return Response(serializer, status=status.HTTP_200_OK)
 
 class HeroVideoView(APIView):
 
@@ -30,6 +42,15 @@ class HeroVideoView(APIView):
         serializer = VideoSerializer(newest_video, context={'request': request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class HlsPlaylistView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, movie_id, resolution):
+        path = os.path.join(settings.MEDIA_ROOT, 'hls', str(movie_id), resolution, 'index.m3u8')
+        if not os.path.exists(path):
+            raise Http404("HLS-Datei nicht gefunden")
+        return Response(open(path, 'rb'), content_type='application/vnd.apple.mpegurl')
 
 
 # class MediaView(generics.ListAPIView):

@@ -3,10 +3,11 @@ import os
 from django.conf import settings
 
 def convert720p(instance, source):
-    # source.pop('.mp4')
-    new_file_name = source + '_720p.mp4'
-    thumbnail_name = source + '_thumb.jpg'
-	# cmd = 'ffmpeg -i "{}" -s hd720 -c:v libx264 -crf 23 -c:a aac -strict -2 "{}"'.format(source, new_file_name)
+    base_path, ext = os.path.splitext(source)
+    new_file_name = base_path + '_720p.mp4'
+    thumbnail_name = base_path + '_thumb.jpg'
+
+    # 1. MP4 in 720p rendern
     cmd = [
         'ffmpeg',
         '-i', source,
@@ -17,8 +18,9 @@ def convert720p(instance, source):
         '-strict', '-2',
         new_file_name
     ]
-    run = subprocess.run(cmd, capture_output=True)
+    subprocess.run(cmd, capture_output=True)
 
+    # 2. Thumbnail erzeugen
     thumbnail_cmd = [
         'ffmpeg',
         '-ss', '00:00:01',
@@ -27,9 +29,34 @@ def convert720p(instance, source):
         '-q:v', '2',
         thumbnail_name
     ]
-
-    run = subprocess.run(thumbnail_cmd, capture_output=True)
+    subprocess.run(thumbnail_cmd, capture_output=True)
 
     rel_thumb_path = os.path.relpath(thumbnail_name, settings.MEDIA_ROOT)
-    instance.thumbnail.name = rel_thumb_path
+    instance.thumbnail_url.name = rel_thumb_path
+
+    # 3. Convert in HLS
+    source = instance.video_file.path
+    output_base = os.path.join(settings.MEDIA_ROOT, 'hls', str(instance.id), '720p')
+    segment_dir = os.path.join(output_base, 'segments')
+    playlist_dir = output_base
+
+    os.makedirs(segment_dir, exist_ok=True)
+
+    cmd = [
+        'ffmpeg',
+        '-i', source,
+        '-vf', 'scale=1280:720',
+        '-b:v', '2000k',
+        '-c:v', 'h264',
+        '-c:a', 'aac',
+        '-strict', '-2',
+        '-f', 'hls',
+        '-hls_time', '4',
+        '-hls_playlist_type', 'vod',
+        '-hls_segment_filename', os.path.join(segment_dir, 'index_%03d.ts'),
+        os.path.join(playlist_dir, 'index.m3u8'),
+        '-map', '0:v', '-map', '0:a'
+    ]
+    subprocess.run(cmd, check=True)
+
     instance.save()
