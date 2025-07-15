@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from videoflix_app.models import Video, Genre
 from videoflix_app.api.serializers import VideoSerializer
 from rest_framework import status
-from django.http import Http404
+from django.http import Http404, FileResponse, HttpResponse
 from django.conf import settings
 import os
 from rest_framework.permissions import AllowAny
@@ -31,9 +31,9 @@ class MediaView(APIView):
 
     def get(self, request, format=None):
         videos = Video.objects.all()
-        serializer = VideoSerializer(videos, context={'request': request})
+        serializer = VideoSerializer(videos, many=True, context={'request': request})
 
-        return Response(serializer, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class HeroVideoView(APIView):
 
@@ -49,9 +49,24 @@ class HlsPlaylistView(APIView):
     def get(self, request, movie_id, resolution):
         path = os.path.join(settings.MEDIA_ROOT, 'hls', str(movie_id), resolution, 'index.m3u8')
         if not os.path.exists(path):
-            raise Http404("HLS-Datei nicht gefunden")
-        return Response(open(path, 'rb'), content_type='application/vnd.apple.mpegurl')
+            raise Http404("Playlist nicht gefunden")
 
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        return HttpResponse(content, content_type='application/vnd.apple.mpegurl')
+
+class HlsSegmentView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, movie_id, resolution, segment):
+        # Pfad zur TS-Datei aufbauen
+        segment_path = os.path.join(settings.MEDIA_ROOT, 'hls', str(movie_id), resolution, 'segments', segment)
+
+        if not os.path.exists(segment_path):
+            raise Http404("Segmentfile not found")
+
+        return FileResponse(open(segment_path, 'rb'), content_type='video/MP2T')
 
 # class MediaView(generics.ListAPIView):
 #     queryset = Video.objects.all()
