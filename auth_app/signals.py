@@ -11,6 +11,8 @@ from django.utils.encoding import force_bytes
 import os
 from auth_app.api.views import resetPassword
 from django.core.mail import EmailMultiAlternatives
+from email.mime.image import MIMEImage
+from django.conf import settings
 
 @receiver(post_save, sender=User)
 def send_email_registration(sender, instance, created, **kwargs):
@@ -30,6 +32,16 @@ def send_email_registration(sender, instance, created, **kwargs):
         )
 
         msg.attach_alternative(confirmation_msg_html, "text/html")
+
+        relative_path = 'logo.png'
+        image_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+
+        with open(image_path, 'rb') as img_file:
+            image = MIMEImage(img_file.read())
+            image.add_header('Content-ID', '<logo>')
+            image.add_header('Content-Disposition', 'inline', filename='logo.png')
+            msg.attach(image)
+
         msg.send()
 
 @receiver(resetPassword)
@@ -51,4 +63,14 @@ def send_email_reset_password(sender, instance, created, **kwargs):
         )
 
         msg.attach_alternative(confirmation_msg_html, "text/html")
+
+        relative_path = 'logo.png'
+        image_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+
+        with open(image_path, 'rb') as img_file:
+            image = MIMEImage(img_file.read())
+            image.add_header('Content-ID', '<logo>')
+            image.add_header('Content-Disposition', 'inline', filename='logo.png')
+            msg.attach(image)
+
         msg.send()
