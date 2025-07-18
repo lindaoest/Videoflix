@@ -39,6 +39,10 @@ def saveOriginalVideo(instance, source):
     ]
     subprocess.run(thumbnail_cmd, capture_output=True)
 
+    # Delete Original MP4 video
+    if os.path.isfile(instance.video_file.path):
+        os.remove(instance.video_file.path)
+
     instance.thumbnail_url.name = os.path.join('thumbnails', base_name_thumbnail)
     instance.video_file.name = os.path.join('videos', base_name)
     instance.save()

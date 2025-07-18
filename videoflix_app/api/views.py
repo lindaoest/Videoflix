@@ -44,7 +44,6 @@ class HeroVideoView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class HlsPlaylistView(APIView):
-    permission_classes = [AllowAny]
 
     def get(self, request, movie_id, resolution):
         path = os.path.join(settings.MEDIA_ROOT, 'hls', str(movie_id), resolution, 'index.m3u8')
@@ -57,10 +56,12 @@ class HlsPlaylistView(APIView):
         return HttpResponse(content, content_type='application/vnd.apple.mpegurl')
 
 class HlsSegmentView(APIView):
-    permission_classes = [AllowAny]
 
     def get(self, request, movie_id, resolution, segment):
-        # Pfad zur TS-Datei aufbauen
+        if segment.startswith("index.m3u8/"):
+            # Delete "index.m3u8/" from segment
+            segment = segment[len("index.m3u8/"):]
+
         segment_path = os.path.join(settings.MEDIA_ROOT, 'hls', str(movie_id), resolution, 'segments', segment)
 
         if not os.path.exists(segment_path):

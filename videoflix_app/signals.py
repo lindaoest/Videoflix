@@ -26,11 +26,6 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
         if os.path.isfile(video_path):
             os.remove(video_path)
 
-		# Delete Original MP4 video
-        video_origin_path = os.path.join(settings.MEDIA_ROOT, instance.video_file.name)
-        if os.path.isfile(video_origin_path):
-            os.remove(video_origin_path)
-
         # Delete thumbnail
         thumbnail_path = os.path.join(settings.MEDIA_ROOT, 'thumbnails', f"{instance.id}_thumb.jpg")
         if os.path.isfile(thumbnail_path):
