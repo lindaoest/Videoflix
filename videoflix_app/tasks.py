@@ -2,12 +2,14 @@ import subprocess
 import os
 from django.conf import settings
 
-def convert1080p(instance, source):
-    base_path, ext = os.path.splitext(source)
-    new_file_name = base_path + '_1080p.mp4'
-    thumbnail_name = base_path + '_thumb.jpg'
+def saveOriginalVideo(instance, source):
+    # Render MP4 in 1080p
+    videos_dir = os.path.join(settings.MEDIA_ROOT, 'videos')
+    os.makedirs(videos_dir, exist_ok=True)
 
-    # 1. MP4 in 1080p rendern
+    base_name = f"{instance.id}.mp4"
+    new_file_path = os.path.join(videos_dir, base_name)
+
     cmd = [
         'ffmpeg',
         '-i', source,
@@ -16,25 +18,33 @@ def convert1080p(instance, source):
         '-crf', '23',
         '-c:a', 'aac',
         '-strict', '-2',
-        new_file_name
+        new_file_path
     ]
     subprocess.run(cmd, capture_output=True)
 
-    # 2. Thumbnail erzeugen
+    # Generate Thumbnail
+    thumbnail_dir = os.path.join(settings.MEDIA_ROOT, 'thumbnails')
+    os.makedirs(thumbnail_dir, exist_ok=True)
+
+    base_name_thumbnail = f"{instance.id}_thumb.jpg"
+    thumbnail_path = os.path.join(thumbnail_dir, base_name_thumbnail)
+
     thumbnail_cmd = [
         'ffmpeg',
         '-ss', '00:00:01',
-        '-i', new_file_name,
+        '-i', new_file_path,
         '-frames:v', '1',
         '-q:v', '2',
-        thumbnail_name
+        thumbnail_path
     ]
     subprocess.run(thumbnail_cmd, capture_output=True)
 
-    rel_thumb_path = os.path.relpath(thumbnail_name, settings.MEDIA_ROOT)
-    instance.thumbnail_url.name = rel_thumb_path
+    instance.thumbnail_url.name = os.path.join('thumbnails', base_name_thumbnail)
+    instance.video_file.name = os.path.join('videos', base_name)
+    instance.save()
 
-    # 3. Convert in HLS
+def convert1080p(instance, source):
+    # Convert in HLS
     source = instance.video_file.path
     output_base = os.path.join(settings.MEDIA_ROOT, 'hls', str(instance.id), '1080p')
     segment_dir = os.path.join(output_base, 'segments')
@@ -59,41 +69,8 @@ def convert1080p(instance, source):
     ]
     subprocess.run(cmd, check=True)
 
-    instance.save()
-
 def convert720p(instance, source):
-    base_path, ext = os.path.splitext(source)
-    new_file_name = base_path + '_720p.mp4'
-    thumbnail_name = base_path + '_thumb.jpg'
-
-    # 1. MP4 in 720p rendern
-    cmd = [
-        'ffmpeg',
-        '-i', source,
-        '-s', 'hd720',
-        '-c:v', 'libx264',
-        '-crf', '23',
-        '-c:a', 'aac',
-        '-strict', '-2',
-        new_file_name
-    ]
-    subprocess.run(cmd, capture_output=True)
-
-    # 2. Thumbnail erzeugen
-    thumbnail_cmd = [
-        'ffmpeg',
-        '-ss', '00:00:01',
-        '-i', new_file_name,
-        '-frames:v', '1',
-        '-q:v', '2',
-        thumbnail_name
-    ]
-    subprocess.run(thumbnail_cmd, capture_output=True)
-
-    rel_thumb_path = os.path.relpath(thumbnail_name, settings.MEDIA_ROOT)
-    instance.thumbnail_url.name = rel_thumb_path
-
-    # 3. Convert in HLS
+    # Convert in HLS
     source = instance.video_file.path
     output_base = os.path.join(settings.MEDIA_ROOT, 'hls', str(instance.id), '720p')
     segment_dir = os.path.join(output_base, 'segments')
@@ -118,41 +95,8 @@ def convert720p(instance, source):
     ]
     subprocess.run(cmd, check=True)
 
-    instance.save()
-
 def convert480p(instance, source):
-    base_path, ext = os.path.splitext(source)
-    new_file_name = base_path + '_480p.mp4'
-    thumbnail_name = base_path + '_thumb.jpg'
-
-    # 1. MP4 in 480p rendern
-    cmd = [
-        'ffmpeg',
-        '-i', source,
-        '-s', 'hd480',
-        '-c:v', 'libx264',
-        '-crf', '23',
-        '-c:a', 'aac',
-        '-strict', '-2',
-        new_file_name
-    ]
-    subprocess.run(cmd, capture_output=True)
-
-    # 2. Thumbnail erzeugen
-    thumbnail_cmd = [
-        'ffmpeg',
-        '-ss', '00:00:01',
-        '-i', new_file_name,
-        '-frames:v', '1',
-        '-q:v', '2',
-        thumbnail_name
-    ]
-    subprocess.run(thumbnail_cmd, capture_output=True)
-
-    rel_thumb_path = os.path.relpath(thumbnail_name, settings.MEDIA_ROOT)
-    instance.thumbnail_url.name = rel_thumb_path
-
-    # 3. Convert in HLS
+    # Convert in HLS
     source = instance.video_file.path
     output_base = os.path.join(settings.MEDIA_ROOT, 'hls', str(instance.id), '480p')
     segment_dir = os.path.join(output_base, 'segments')
@@ -176,5 +120,3 @@ def convert480p(instance, source):
         '-map', '0:v', '-map', '0:a'
     ]
     subprocess.run(cmd, check=True)
-
-    instance.save()
