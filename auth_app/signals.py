@@ -20,7 +20,8 @@ def send_email_registration(sender, instance, created, **kwargs):
     uid = urlsafe_base64_encode(force_bytes(instance.pk))
     # Create activation link
     activation_path = reverse('activateRegistration-list', kwargs={'uidb64': uid, 'token': token})
-    activation_link = f"http://localhost:8000{activation_path}"
+    # activation_link = f"http://localhost:8000{activation_path}"
+    activation_link = f"http://127.0.0.1:5500/pages/auth/activate.html?uid={uid}&token={token}"
     # Apply template
     confirmation_msg_text = render_to_string('confirmation-registration-email.txt', {'username': instance.username, 'activation_link': activation_link})
     confirmation_msg_html = render_to_string('confirmation-registration-email.html', {'username': instance.username, 'activation_link': activation_link})
@@ -39,7 +40,7 @@ def send_email_reset_password(sender, instance, created, **kwargs):
     uid = urlsafe_base64_encode(force_bytes(instance.pk))
     # Create activation link
     activation_path = reverse('password-confirm-list', kwargs={'uidb64': uid, 'token': token})
-    activation_link = f"http://127.0.0.1:5500/pages/auth/confirm_password.html"
+    activation_link = f"http://127.0.0.1:5500/pages/auth/confirm_password.html?uid={uid}&token={token}"
     # Apply template
     confirmation_msg_text = render_to_string('password_confirm-email.txt', {'activation_link': activation_link})
     confirmation_msg_html = render_to_string('password_confirm-email.html', {'activation_link': activation_link})
