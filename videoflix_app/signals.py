@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from videoflix_app.models import Video
-from videoflix_app.tasks import save_original_video, convert_720p, convert_1080p, convert_480p
+from videoflix_app.tasks import save_original_video
 import os
 import shutil
 from django.conf import settings
@@ -16,10 +16,6 @@ def video_post_save(sender, instance, created, **kwargs):
 		# Apply task save_original_video to queue
 		queue.enqueue(save_original_video, instance.pk, instance.video_file.path)
 
-		# save_original_video(instance, instance.video_file.path)
-		# convert_1080p(instance, instance.video_file.path)
-		# convert_720p(instance, instance.video_file.path)
-		# convert_480p(instance, instance.video_file.path)
 
 # Signal for video after delete
 @receiver(post_delete, sender=Video)

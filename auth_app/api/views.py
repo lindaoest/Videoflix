@@ -32,7 +32,6 @@ class RegistrationView(APIView):
 
 			# Return token placeholder and user info
 			return Response({
-				'token': 'token',
 				'user': {
 					'id': user.pk,
 					'email': user.email
