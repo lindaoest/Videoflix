@@ -18,8 +18,16 @@ resetPassword = Signal()
 # View for user registration - anyone can access
 class RegistrationView(APIView):
 	permission_classes = [AllowAny]
+	authentication_classes = []
 
 	def post(self, request, *args, **kwargs):
+		# Delete old JWT tokens
+		response = Response()
+		access_token = request.COOKIES.get('access_token')
+		if access_token is not None:
+			response.delete_cookie('access_token')
+			response.delete_cookie('refresh_token')
+
 		# Validate input data with serializer
 		serializer = RegistrationSerializer(data=request.data)
 
@@ -31,12 +39,15 @@ class RegistrationView(APIView):
 			user.save()
 
 			# Return token placeholder and user info
-			return Response({
+			response.data = {
 				'user': {
 					'id': user.pk,
 					'email': user.email
 				}
-			}, status=status.HTTP_201_CREATED)
+			}
+			response.status_code = status.HTTP_201_CREATED
+
+			return response
 
 		# Return validation errors
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
