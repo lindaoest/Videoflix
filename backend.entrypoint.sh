@@ -13,6 +13,15 @@ done
 
 echo "PostgreSQL ist bereit - fahre fort..."
 
+# Zielverzeichnis sicherstellen (falls nicht vorhanden)
+mkdir -p /app/media
+
+# Bild nur kopieren, wenn es noch nicht im Volume vorhanden ist
+if [ ! -f /app/media/logo.png ]; then
+  echo "Kopiere logo/logo.png nach /app/media/logo.png"
+  cp /app/logo/logo.png /app/media/logo.png
+fi
+
 # Deine originalen Befehle (ohne wait_for_db)
 python manage.py collectstatic --noinput
 python manage.py makemigrations
